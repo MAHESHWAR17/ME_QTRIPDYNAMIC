@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QTrip Adventures</title>
+
+    <link rel="stylesheet" href="../../css/styles.css" />
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light ps-3">
+
+        <a class="navbar-brand" href="../../">
+            QTrip
+        </a>
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNavDropdown"
+        >
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div
+            class="collapse navbar-collapse"
+            id="navbarNavDropdown"
+        >
+
+            <ul class="navbar-nav d-flex justify-content-end w-100">
+
+                <li class="nav-item active">
+                    <a class="nav-link" href="../../">
+                        Home
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="./reservations/"
+                    >
+                        Reservations
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+    </nav>
+
+    <!-- Content -->
+    <div class="container">
+
+        <div class="content">
+
+            <h1>Explore all adventures</h1>
+
+            <p style="font-size: 24px">
+                Here's a list of places that you can explore in city
+            </p>
+
+            <!-- Filters -->
+            <div class="mb-5">
+
+                <div class="filter-bar d-flex align-items-center">
+
+                    <div class="filter-bar-tile">
+                        <label>Filters:</label>
+                    </div>
+
+                    <!-- Duration -->
+                    <div class="filter-bar-tile d-flex align-items-center">
+
+                        <select
+                            class="form-control"
+                            id="duration-select"
+                            onchange="selectDuration(event)"
+                        >
+
+                            <option disabled selected value="">
+                                Filter by Duration (Hours)
+                            </option>
+
+                            <option value="0-2">
+                                0-2 Hours
+                            </option>
+
+                            <option value="2-6">
+                                2-6 Hours
+                            </option>
+
+                            <option value="6-12">
+                                6-12 Hours
+                            </option>
+
+                            <option value="12-99">
+                                12+ Hours
+                            </option>
+
+                        </select>
+
+                        <div
+                            class="ms-3"
+                            style="color:#0645ad; cursor:pointer"
+                            onclick="clearDuration()"
+                        >
+                            Clear
+                        </div>
+
+                    </div>
+
+                    <!-- Category -->
+                    <div class="filter-bar-tile d-flex align-items-center">
+
+                        <select
+                            class="form-control"
+                            id="category-select"
+                            onchange="selectCategory(event)"
+                        >
+
+                            <option disabled selected value="">
+                                Add Category
+                            </option>
+
+                            <option value="Cycling">
+                                Cycling Routes
+                            </option>
+
+                            <option value="Hillside">
+                                Hillside Getaways
+                            </option>
+
+                            <option value="Beaches">
+                                Serene Beaches
+                            </option>
+
+                            <option value="Party">
+                                Party Spots
+                            </option>
+
+                        </select>
+
+                        <div
+                            class="ms-3"
+                            style="color:#0645ad; cursor:pointer"
+                            onclick="clearCategory()"
+                        >
+                            Clear
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Category Pills -->
+                <div class="mt-2" id="category-section">
+
+                    <div
+                        class="d-flex align-items-center"
+                        id="category-list"
+                    ></div>
+
+                </div>
+
+            </div>
+
+            <!-- Adventure Cards -->
+            <div class="row" id="data"></div>
+
+        </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            © QTrip 2020
+        </div>
+    </footer>
+
+    <!-- Bootstrap -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    ></script>
+
+    <!-- Main Script -->
+    <script type="module">
+
+        import {
+            getCityFromURL,
+            fetchAdventures,
+            addAdventureToDOM,
+            filterFunction,
+            saveFiltersToLocalStorage,
+            getFiltersFromLocalStorage,
+            generateFilterPillsAndUpdateDOM
+        } from "../../modules/adventures_page.js";
+
+        let adventures;
+
+        // Initialize filters
+        let filters =
+            getFiltersFromLocalStorage() !== null
+                ? getFiltersFromLocalStorage()
+                : {
+                    duration: "",
+                    category: []
+                };
+
+        // Main Entry Point
+        (async function () {
+
+            // Get city from URL
+            let city =
+                getCityFromURL(window.location.search);
+
+            // Fetch adventures
+            adventures =
+                await fetchAdventures(city);
+
+            // Apply filters
+            let filteredAdventures =
+                filterFunction(adventures, filters);
+
+            // Add to DOM
+            addAdventureToDOM(filteredAdventures);
+
+            // Generate pills
+            generateFilterPillsAndUpdateDOM(filters);
+
+        })();
+
+        // Duration Filter
+        function selectDuration(event) {
+
+            document.getElementById("data").innerHTML = "";
+
+            filters.duration = event.target.value;
+
+            let filteredAdventures =
+                filterFunction(adventures, filters);
+
+            addAdventureToDOM(filteredAdventures);
+
+            saveFiltersToLocalStorage(filters);
+        }
+
+        // Clear Duration
+        function clearDuration() {
+
+            document.getElementById("data").innerHTML = "";
+
+            filters.duration = "";
+
+            document.getElementById(
+                "duration-select"
+            ).selectedIndex = 0;
+
+            let filteredAdventures =
+                filterFunction(adventures, filters);
+
+            addAdventureToDOM(filteredAdventures);
+
+            saveFiltersToLocalStorage(filters);
+        }
+
+        // Category Filter
+        function selectCategory(event) {
+
+            document.getElementById("data").innerHTML = "";
+
+            let category = event.target.value;
+
+            // Reset dropdown
+            document.getElementById(
+                "category-select"
+            ).selectedIndex = 0;
+
+            // Add category
+            filters.category.push(category);
+
+            // Remove duplicates
+            filters.category =
+                filters.category.filter(onlyUnique);
+
+            // Generate pills
+            generateFilterPillsAndUpdateDOM(filters);
+
+            // Filter adventures
+            let filteredAdventures =
+                filterFunction(adventures, filters);
+
+            addAdventureToDOM(filteredAdventures);
+
+            saveFiltersToLocalStorage(filters);
+        }
+
+        // Clear Category
+        function clearCategory() {
+
+            document.getElementById("data").innerHTML = "";
+
+            filters.category = [];
+
+            document.getElementById(
+                "category-list"
+            ).innerHTML = "";
+
+            let filteredAdventures =
+                filterFunction(adventures, filters);
+
+            addAdventureToDOM(filteredAdventures);
+
+            saveFiltersToLocalStorage(filters);
+        }
+
+        // Remove duplicate categories
+        function onlyUnique(value, index, self) {
+
+            return self.indexOf(value) === index;
+        }
+
+        // Register globally
+        window.selectDuration = selectDuration;
+        window.selectCategory = selectCategory;
+        window.clearDuration = clearDuration;
+        window.clearCategory = clearCategory;
+
+    </script>
+
+</body>
+
+</html>
